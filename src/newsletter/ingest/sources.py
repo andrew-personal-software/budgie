@@ -30,7 +30,7 @@ def preview(url: str, client, adapters: list[Adapter], adapter: str | None = Non
 def subscribe(session: Session, url: str, client, adapters: list[Adapter],
               now: datetime, adapter: str | None = None, options: dict | None = None,
               reactivate: bool = True) -> Source | None:
-    """Discover and subscribe. The first ingest happens on the next hourly run.
+    """Discover and subscribe. The first ingest happens on the next ingest run (06:00 or 18:00 ET).
     With `reactivate=False`, an unsubscribed source stays unsubscribed."""
     cfg = preview(url, client, adapters, adapter, options)
     if cfg is None:

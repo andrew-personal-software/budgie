@@ -50,7 +50,7 @@ Three systemd services on the mini PC, run as the `budgie` user from `/opt/budgi
 | Service | Job |
 |---|---|
 | `budgie-web` | FastAPI app: pages + API, on `127.0.0.1`; Caddy proxies the tailnet to it |
-| `budgie-worker` | APScheduler: hourly ingest, issue build, email, backup |
+| `budgie-worker` | APScheduler: ingest at 06:00 and 18:00, issue build, email, backup |
 | `budgie-predeploy` | One-shot, per deploy: DB backup, then `alembic upgrade head` |
 
 Storage: one SQLite file (WAL mode) in `/var/lib/budgie`. SQLAlchemy models, Alembic migrations. The embedding model cache also lives there.
@@ -78,7 +78,7 @@ A candidate counts only if it parses as a feed with ≥1 entry (engineering.fyi'
 
 **Sitemap adapter.** Used when no feed is found. `discover` reads `robots.txt` and `/sitemap.xml`, follows sitemap indexes, and uses the **pasted URL's path as the prefix filter** (e.g. `https://www.uber.com/us/en/blog/engineering` → keep URLs under `/us/en/blog/engineering/`). `fetch` diffs the current URL set against the seen set; new URLs become raw posts whose page is then fetched for title/author/date/text.
 
-**Listing adapter.** Used when neither a feed nor the sitemap works. `discover` fetches the pasted URL (the blog index) and reads its post links: links in `nav`/`header`/`footer`/menus, to other hosts, to the index itself or its parents, to pagination, or to the same index in another locale are dropped; if any links sit in `<article>` cards, only those are kept. Each post's date comes from its card on the index (the post page is the fallback). `fetch` diffs the links against the seen set. It sees only the first page of the index, so it is for blogs that post less than a page between hourly runs. `sources.yaml` can pin an adapter (`{url, adapter}`) when an earlier adapter would match the wrong pages, and give the listing adapter a per-site `include` regex on link paths. URLs no adapter can read go to a `pending:` list with a Sparrow ticket (`newsletter ticket`; see the README).
+**Listing adapter.** Used when neither a feed nor the sitemap works. `discover` fetches the pasted URL (the blog index) and reads its post links: links in `nav`/`header`/`footer`/menus, to other hosts, to the index itself or its parents, to pagination, or to the same index in another locale are dropped; if any links sit in `<article>` cards, only those are kept. Each post's date comes from its card on the index (the post page is the fallback). `fetch` diffs the links against the seen set. It sees only the first page of the index, so it is for blogs that post less than a page between runs (12 hours apart). `sources.yaml` can pin an adapter (`{url, adapter}`) when an earlier adapter would match the wrong pages, and give the listing adapter a per-site `include` regex on link paths. URLs no adapter can read go to a `pending:` list with a Sparrow ticket (`newsletter ticket`; see the README).
 
 ### Fetching rules
 
@@ -142,7 +142,7 @@ Append-only where possible. Tables:
 
 | Time | Job |
 |---|---|
-| Hourly | Ingest all active sources |
+| 6:00, 18:00 | Ingest all active sources |
 | 6:30 | Build and freeze today's issue; write impressions |
 | 7:00 | Page shows today's issue (until then, `/` shows the latest frozen issue) |
 | 7:00 | Send email |
