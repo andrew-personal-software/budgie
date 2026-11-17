@@ -31,6 +31,8 @@ def test_scheduler_jobs_and_times():
     assert nxt(jobs["build"]) == datetime(2026, 10, 27, 6, 30, tzinfo=ET)
     assert nxt(jobs["email"]) == datetime(2026, 10, 27, 7, 0, tzinfo=ET)
     assert nxt(jobs["ingest"]) == datetime(2026, 10, 27, 6, 0, tzinfo=ET)
+    assert jobs["ingest"].trigger.get_next_fire_time(None, datetime(2026, 10, 27, 6, 1, tzinfo=ET)) \
+        == datetime(2026, 10, 27, 18, 0, tzinfo=ET)
     assert nxt(jobs["backup"]) == datetime(2026, 10, 28, 3, 15, tzinfo=ET)
 
 

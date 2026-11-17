@@ -130,7 +130,7 @@ class ListingAdapter:
 
     def discover(self, url: str, client: PoliteClient, include: str | None = None) -> SourceConfig | None:
         if include:
-            re.compile(include)  # a bad rule fails the seed, not every hourly run
+            re.compile(include)  # a bad rule fails the seed, not every ingest run
         parts = urlsplit(url)
         if not parts.scheme or not parts.netloc or not parts.path.strip("/"):
             return None
