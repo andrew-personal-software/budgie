@@ -15,8 +15,11 @@ sources:
   - https://jasmi.news/feed
   - https://www.chinatalk.media/feed
   - https://www.beren.io/feed.xml
+  - https://www.tobyord.com/writing?format=rss
+  - https://asteriskmag.com/feed
   # Sitemap (no feed): the URL path is the prefix filter
   - https://www.goodfire.com/blog
+  - https://arenamag.com/articles
   # Listing page: post links read from the blog's index page. Pinned because
   # Anthropic's posts live under /research/ and Uber's sitemap gives category pages.
   - url: https://www.anthropic.com/engineering
