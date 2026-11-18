@@ -59,7 +59,7 @@ def test_scripts_parse():
 def test_release_deploys_with_hawk():
     job = workflow("release.yml")["jobs"]["hawk"]
     assert job["needs"] == "test"
-    assert job["uses"] == "minghanminghan/hawk/.github/workflows/release.yml@main"
+    assert job["uses"] == "andrew-personal-software/hawk/.github/workflows/release.yml@main"
     assert job["with"] == {"app": "budgie"}
 
 
