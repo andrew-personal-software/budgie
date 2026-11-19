@@ -78,7 +78,7 @@ A candidate counts only if it parses as a feed with ≥1 entry (engineering.fyi'
 
 **Sitemap adapter.** Used when no feed is found. `discover` reads `robots.txt` and `/sitemap.xml`, follows sitemap indexes, and uses the **pasted URL's path as the prefix filter** (e.g. `https://www.uber.com/us/en/blog/engineering` → keep URLs under `/us/en/blog/engineering/`). `fetch` diffs the current URL set against the seen set; new URLs become raw posts whose page is then fetched for title/author/date/text.
 
-**Listing adapter.** Used when neither a feed nor the sitemap works. `discover` fetches the pasted URL (the blog index) and reads its post links: links in `nav`/`header`/`footer`/menus, to other hosts, to the index itself or its parents, to pagination, or to the same index in another locale are dropped; if any links sit in `<article>` cards, only those are kept. Each post's date comes from its card on the index (the post page is the fallback). `fetch` diffs the links against the seen set. It sees only the first page of the index, so it is for blogs that post less than a page between runs (12 hours apart). `sources.yaml` can pin an adapter (`{url, adapter}`) when an earlier adapter would match the wrong pages, and give the listing adapter a per-site `include` regex on link paths. URLs no adapter can read go to a `pending:` list with a Sparrow ticket (`newsletter ticket`; see the README).
+**Listing adapter.** Used when neither a feed nor the sitemap works. `discover` fetches the pasted URL (the blog index) and reads its post links: links in `nav`/`header`/`footer`/menus, to other hosts, to the index itself or its parents, to pagination, or to the same index in another locale are dropped; if any links sit in `<article>` cards, only those are kept. Each post's date comes from its card on the index (the post page is the fallback). `fetch` diffs the links against the seen set. It sees only the first page of the index, so it is for blogs that post less than a page between runs (12 hours apart). `sources.yaml` can set a display name (`title`: the owner, short, like `Netflix` or `Toby Ord`; without it the feed title is used), pin an adapter (`{url, adapter}`) when an earlier adapter would match the wrong pages, and give the listing adapter a per-site `include` regex on link paths. URLs no adapter can read go to a `pending:` list with a Sparrow ticket (`newsletter ticket`; see the README).
 
 ### Fetching rules
 
@@ -179,7 +179,7 @@ An iOS Shortcut (or Android "HTTP Shortcuts" app) on the share sheet: takes the 
 
 Resend, sent at 7:00am ET to the owner.
 
-- Issue OK: subject like "Today's 18 posts are ready", body = one line + link to `/`, then each post as on the page: title (links via `/c/…`), source, author, read time. Text and HTML parts.
+- Issue OK: subject like "Today's 18 posts are ready", body = each post as on the page (no header line; with no posts, one line + link to `/`): title (links via `/c/…`), source, author, read time. Text and HTML parts.
 - Issue failed: "Today's issue failed" + a short error.
 
 ## Config (env vars)

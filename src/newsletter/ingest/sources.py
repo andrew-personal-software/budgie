@@ -29,9 +29,10 @@ def preview(url: str, client, adapters: list[Adapter], adapter: str | None = Non
 
 def subscribe(session: Session, url: str, client, adapters: list[Adapter],
               now: datetime, adapter: str | None = None, options: dict | None = None,
-              reactivate: bool = True) -> Source | None:
+              reactivate: bool = True, title: str | None = None) -> Source | None:
     """Discover and subscribe. The first ingest happens on the next ingest run (06:00 or 18:00 ET).
-    With `reactivate=False`, an unsubscribed source stays unsubscribed."""
+    With `reactivate=False`, an unsubscribed source stays unsubscribed. `title` is the display
+    name; without it, a new source uses the feed's own title and an existing one keeps its name."""
     cfg = preview(url, client, adapters, adapter, options)
     if cfg is None:
         return None
@@ -42,13 +43,15 @@ def subscribe(session: Session, url: str, client, adapters: list[Adapter],
         source.status = "active"
         source.unsubscribed_at = None
         source.config = cfg.config  # picks up an edited rule on re-seed
+        if title:
+            source.title = title
     else:
         source = Source(
             adapter=cfg.adapter,
             input_url=url.strip(),
             config_key=cfg.config_key,
             config=cfg.config,
-            title=cfg.title,
+            title=title or cfg.title,
             site_domain=cfg.site_domain,
             state={},
             status="active",
@@ -73,17 +76,18 @@ def unsubscribe(session: Session, source_id: int, now: datetime) -> bool:
 def seed_from_yaml(session: Session, path: Path, client, adapters: list[Adapter],
                    now: datetime, reactivate: bool = True) -> list[tuple[str, Source | None]]:
     """Each entry is a URL, or `{url, adapter, ...}`: the other keys are options for that
-    adapter, except `ticket` (a Sparrow task id, for people). The `pending` list is not seeded."""
+    adapter, except `ticket` (a Sparrow task id, for people) and `title` (the display name).
+    The `pending` list is not seeded."""
     entries = (yaml.safe_load(Path(path).read_text()) or {}).get("sources") or []
     out: list[tuple[str, Source | None]] = []
     for entry in entries:
         if not isinstance(entry, dict):
             entry = {"url": entry}
-        options = {k: v for k, v in entry.items() if k not in ("url", "adapter", "ticket")}
+        options = {k: v for k, v in entry.items() if k not in ("url", "adapter", "ticket", "title")}
         url = entry["url"]
         try:
             out.append((url, subscribe(session, url, client, adapters, now, entry.get("adapter"), options,
-                                          reactivate)))
+                                          reactivate, entry.get("title"))))
         except Exception:
             session.rollback()
             log.exception("seed failed for %s", url)

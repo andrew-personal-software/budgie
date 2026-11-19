@@ -118,3 +118,17 @@ def test_seed_without_reactivate_keeps_unsubscribed(session, now, tmp_path):
     path.write_text(f"sources:\n  - {url}\n")
     [(_, got)] = seed_from_yaml(session, path, None, adapters, now, reactivate=False)
     assert got.id == source.id and got.status == "unsubscribed" and got.unsubscribed_at == now
+
+
+def test_seed_title_sets_and_updates_display_name(session, now, tmp_path):
+    url1, url2 = "https://fake.example.com/a", "https://fake.example.com/b"
+    adapters = [FakeAdapter(known=[url1, url2])]
+    path = tmp_path / "sources.yaml"
+    path.write_text(f"sources:\n  - url: {url1}\n    title: Netflix\n  - {url2}\n")
+    [(_, a), (_, b)] = seed_from_yaml(session, path, None, adapters, now)
+    feed_title = b.title
+    assert a.title == "Netflix" and a.config == FakeAdapter(known=[url1]).discover(url1, None).config
+    path.write_text(f"sources:\n  - url: {url1}\n    title: Netflix Eng\n  - {url2}\n")
+    [(_, a2), (_, b2)] = seed_from_yaml(session, path, None, adapters, now)
+    assert (a2.id, a2.title) == (a.id, "Netflix Eng")
+    assert b2.title == feed_title  # no title: keeps the feed's own
