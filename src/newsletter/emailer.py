@@ -34,7 +34,8 @@ def _meta(p: dict) -> str:
 
 
 def compose_daily_email(issue: Issue | None, posts: list[dict], base_url: str) -> tuple[str, str, str]:
-    """Returns (subject, text, html). Each post links through its `/c/…` click link, like the page."""
+    """Returns (subject, text, html). The body is just the posts, each through its `/c/…` click
+    link, like the page. With no posts, it is one line that links the page."""
     root = base_url.rstrip("/")
     link = root + "/"
     if issue is None or issue.status != "ok":
@@ -42,12 +43,10 @@ def compose_daily_email(issue: Issue | None, posts: list[dict], base_url: str) -
         return FAILED, f"{line} {link}", f'<p>{escape(line)} <a href="{escape(link)}">{escape(link)}</a></p>'
     if not posts:
         subject = "No new posts today"
-    elif len(posts) == 1:
-        subject = "Today's 1 post is ready"
-    else:
-        subject = f"Today's {len(posts)} posts are ready"
-    text = "\n\n".join([f"{subject}: {link}"] + [f"{p['title']}\n{_meta(p)}\n{root}{p['href']}" for p in posts])
-    html = f'<p><a href="{escape(link)}">{escape(subject)}</a></p>' + "".join(
+        return subject, f"{subject}. {link}", f'<p>{subject}. <a href="{escape(link)}">{escape(link)}</a></p>'
+    subject = "Today's 1 post is ready" if len(posts) == 1 else f"Today's {len(posts)} posts are ready"
+    text = "\n\n".join(f"{p['title']}\n{_meta(p)}\n{root}{p['href']}" for p in posts)
+    html = "".join(
         f'<p><a href="{escape(root + p["href"])}">{escape(p["title"])}</a><br>'
         f'<span style="color:#5B6B7A">{escape(_meta(p))}</span></p>'
         for p in posts

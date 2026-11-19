@@ -28,7 +28,7 @@ Deploys go through [hawk](https://github.com/andrew-personal-software/hawk), ins
    ```
 
    It is safe to re-run. It makes the user, dirs, units and Caddy site, then runs `deploy/hawk-setup.sh` (`/etc/budgie/*.env`, the `budgie` CLI, the uv dirs).
-2. **Fill in `/etc/budgie/budgie.env`** (`sudo -e /etc/budgie/budgie.env`). Make the password hash on your laptop with `uv run newsletter hash-password`. Put it in `APP_PASSWORD_HASH` **inside single quotes** (it contains `$`). Fill in the three random secrets and the Resend values. The app does not start without them.
+2. **Fill in `/etc/budgie/budgie.env`** (`sudo -e /etc/budgie/budgie.env`). Make the password hash on your laptop with `uv run newsletter hash-password`. Put it in `APP_PASSWORD_HASH` **inside single quotes** (it contains `$`). Fill in the three random secrets and the Resend values (`EMAIL_FROM=Budgie <budgie@andrewminghanjiang.com>`). The app does not start without them.
 3. **Deploy.** Merge a `fix:` or `feat:` PR to `main`.
 4. **Sources.** The worker subscribes to `sources.yaml` when it starts, so each deploy adds new entries. It does not bring back a source you unsubscribed in the web UI: run `sudo budgie seed sources.yaml` for that. To fetch now instead of at the top of the hour: `sudo budgie ingest`.
 
@@ -44,7 +44,7 @@ On the mini PC: `sudo budgie <command>` (the newsletter CLI as the `budgie` user
 
 | Command | What it does |
 |---|---|
-| `seed PATH` | Subscribe to every URL in a YAML file (`sources: [url, ...]`; an entry can also be `{url, adapter, include, ticket}`) |
+| `seed PATH` | Subscribe to every URL in a YAML file (`sources: [url, ...]`; an entry can also be `{url, title, adapter, include, ticket}`; `title` is the display name) |
 | `ingest` | Fetch new posts from all active sources |
 | `embed` | Embed posts that have no vector yet |
 | `build [--date YYYY-MM-DD]` | Build an issue (safe to re-run; replaces a failed one) |

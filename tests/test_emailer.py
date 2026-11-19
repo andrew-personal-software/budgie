@@ -34,16 +34,23 @@ def test_ok_subjects(n, subject, now):
     issue = Issue(issue_date=DAY, built_at=now, status="ok", ranker_version="rules-v1")
     got_subject, body, html = compose_daily_email(issue, [post(i) for i in range(n)], BASE)
     assert got_subject == subject
-    assert body.splitlines()[0] == f"{subject}: {BASE}/"
-    assert f'<a href="{BASE}/">{escape(subject)}</a>' in html
+    if n:  # no header line: posts come first
+        assert subject not in body and subject not in html
+        assert body.splitlines()[0] == "Post 0" and html.startswith(f'<p><a href="{BASE}/c/tok0">')
+
+
+def test_no_posts_email_links_the_page(now):
+    issue = Issue(issue_date=DAY, built_at=now, status="ok", ranker_version="rules-v1")
+    _, body, html = compose_daily_email(issue, [], BASE)
+    assert body == f"No new posts today. {BASE}/"
+    assert f'<a href="{BASE}/">' in html
 
 
 def test_posts_link_like_the_page(now):
     issue = Issue(issue_date=DAY, built_at=now, status="ok")
     posts = [post(1, author="Jane Doe"), post(2, title="A <b> & c", is_teaser=True)]
     _, body, html = compose_daily_email(issue, posts, BASE + "/")
-    assert body == (f"Today's 2 posts are ready: {BASE}/\n\n"
-                    f"Post 1\nBlog, Jane Doe, 3 min\n{BASE}/c/tok1\n\n"
+    assert body == (f"Post 1\nBlog, Jane Doe, 3 min\n{BASE}/c/tok1\n\n"
                     f"A <b> & c\nBlog, 3 min, subscribers only\n{BASE}/c/tok2")
     assert f'<a href="{BASE}/c/tok1">Post 1</a>' in html
     assert f'<a href="{BASE}/c/tok2">A &lt;b&gt; &amp; c</a>' in html
@@ -80,8 +87,8 @@ def test_send_daily_email_uses_today_issue(session, make_source, make_item, now)
     [(to, subject, text, _)] = sender.calls
     assert (to, subject) == ("me@example.com", "Today's 2 posts are ready")
     lines = text.splitlines()
-    assert [lines[2], lines[6]] == ["First", "Second"]
-    tokens = [line.removeprefix(f"{BASE}/c/") for line in (lines[4], lines[8])]
+    assert [lines[0], lines[4]] == ["First", "Second"]
+    tokens = [line.removeprefix(f"{BASE}/c/") for line in (lines[2], lines[6])]
     slots = {i.id: i.slot for i in session.query(Impression)}
     assert [slots[unsign_link(t, "s")] for t in tokens] == [1, 2]
 
