@@ -17,6 +17,7 @@ sources:
   - https://www.beren.io/feed.xml
   - https://www.tobyord.com/writing?format=rss
   - https://asteriskmag.com/feed
+  - https://www.curttigges.com/rss.xml
   # Sitemap (no feed): the URL path is the prefix filter
   - https://www.goodfire.com/blog
   - https://arenamag.com/articles
